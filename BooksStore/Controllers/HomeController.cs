@@ -8,6 +8,7 @@ using BooksStore.Models;
 using System.Net.Http;
 using Newtonsoft.Json;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace BooksStore.Controllers
 {
@@ -165,6 +166,27 @@ namespace BooksStore.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+        /**************************Send a Image****************************************/
+        [HttpPost]
+        public async Task<IActionResult> AddFile(IFormFile file)
+        {
+            string apiResponse = "";
+            using (var httpClient = new HttpClient())
+            {
+                var form = new MultipartFormDataContent();
+                using (var fileStream = file.OpenReadStream())
+                {
+                    form.Add(new StreamContent(fileStream), "file", file.FileName);
+                    using (var response = await httpClient.PostAsync("http://localhost:51369/api/books/UploadFile", form))
+                    {
+                        response.EnsureSuccessStatusCode();
+                        apiResponse = await response.Content.ReadAsStringAsync();
+                    }
+                }
+            }
+            return View((object)apiResponse);
         }
 
 
